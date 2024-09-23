@@ -46,8 +46,8 @@ docker run -ti --name connect \
 5. Criando uma estrutura padrão no banco de dados, que será observada:
 
 ```sh
-# Conectar ao bano de dados do passo 1:
-psql -h localhost -p 5000 -U postgres
+# Conectar na imagem de postgres do passo 1:
+docker exec -ti <IMAGE_ID> sh -c 'psql -h localhost -p 5432 -U postgres'
 
 # Uma vez feita a conexão, executar na ordem abaixo:
 CREATE DATABASE inventory;
