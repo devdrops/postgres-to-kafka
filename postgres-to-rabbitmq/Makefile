@@ -2,7 +2,7 @@ start-postgres:
 	docker rm -f postgres
 	docker run -d --name postgres \
 		-p 5432:5432 \
-		-v $(CURDIR)/postgresql.conf:/etc/postgresql.conf \
+		-v $(CURDIR)/postgres_conf/postgresql.conf:/etc/postgresql.conf \
 		-v $(CURDIR)/pgdata:/var/lib/postgresql/data/pgdata \
 		-e PGDATA=/var/lib/postgresql/data/pgdata \
 		-e POSTGRES_HOST_AUTH_METHOD=trust \
@@ -18,6 +18,7 @@ start-rabbitmq:
 	docker run -d --name rabbitmq \
 		-p 5672:5672 \
 		-p 15672:15672 \
+		-p 25672:25672 \
 		-p 5552:5552 \
 		-e RABBITMQ_ERLANG_COOKIE="a-secret-hash" \
 		-e RABBITMQ_DEFAULT_VHOST="/" \
@@ -28,16 +29,18 @@ start-rabbitmq:
 	sleep 3 # É necessário esperar antes de habilitar os plugins abaixo ¬¬
 	docker exec rabbitmq rabbitmq-plugins enable rabbitmq_stream
 	docker exec rabbitmq rabbitmq-plugins enable rabbitmq_stream_management
+	docker cp $(CURDIR)/rabbitmq_conf/rabbitmq.conf rabbitmq:/etc/rabbitmq
+	docker cp $(CURDIR)/rabbitmq_conf/definitions.json rabbitmq:/etc/rabbitmq
 
 stop-rabbitmq:
 	docker stop rabbitmq
 
 start-debezium-server:
+	@echo -n "Já criou a exchange? [y/N] " && read ans && [ $${ans:-N} = y ]
 	docker rm -f debezium
-	docker run  -ti --name debezium \
+	docker run -ti --name debezium \
 		-p 8080:8080 \
-		-v $(CURDIR)/application.properties:/debezium/conf/application.properties \
-		-v $(CURDIR)/data:/debezium/data \
+		-v $(CURDIR)/debezium_conf/application.properties:/debezium/conf/application.properties \
 		--link postgres:postgres \
 		--link rabbitmq:rabbitmq \
 		debezium/server
@@ -46,4 +49,8 @@ stop-debezium-server:
 	docker stop debezium
 
 open-postgres:
-	docker exec -ti postgres sh -c 'psql -p 5432 -U postgres'
+	docker exec -ti postgres sh -c 'psql -U postgres'
+
+start: start-postgres start-rabbitmq start-debezium-server
+
+stop: stop-debezium-server stop-rabbitmq stop-postgres

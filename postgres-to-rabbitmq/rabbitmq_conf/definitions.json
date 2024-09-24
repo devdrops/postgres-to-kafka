@@ -1,0 +1,38 @@
+{
+  "rabbit_version": "3.13.1",
+  "rabbitmq_version": "3.13.1",
+  "product_name": "RabbitMQ",
+  "product_version": "3.13.1",
+  "vhosts": [
+    {
+      "name": "/"
+    }
+  ],
+  "users": [
+    {
+      "name": "guest",
+      "password_hash": "9/1i+jKFRpbTRV1PtRnzFFYibT3cEpP92JeZ8YKGtflf4e/u",
+      "tags": ["administrator"]
+    }
+  ],
+  "permissions": [
+    {
+      "user": "guest",
+      "vhost": "/",
+      "configure": ".*",
+      "read": ".*",
+      "write": ".*"
+    }
+  ],
+  "exchanges": [
+    {
+      "name": "users_changes",
+      "vhost": "/",
+      "type": "fanout",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    }
+  ]
+}
