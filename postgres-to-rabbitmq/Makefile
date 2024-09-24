@@ -29,14 +29,18 @@ start-rabbitmq:
 	sleep 3 # É necessário esperar antes de habilitar os plugins abaixo ¬¬
 	docker exec rabbitmq rabbitmq-plugins enable rabbitmq_stream
 	docker exec rabbitmq rabbitmq-plugins enable rabbitmq_stream_management
+	docker exec rabbitmq rabbitmq-plugins enable rabbitmq_management
 	docker cp $(CURDIR)/rabbitmq_conf/rabbitmq.conf rabbitmq:/etc/rabbitmq
 	docker cp $(CURDIR)/rabbitmq_conf/definitions.json rabbitmq:/etc/rabbitmq
+	sleep 2 # Esperar 2 segundos para declarar a exchange
+	docker exec rabbitmq sh -c "rabbitmqadmin declare exchange name='cdc.users' type='direct'"
+	docker exec rabbitmq sh -c "rabbitmqadmin declare queue --vhost=/ name='cdc.users' durable='true'"
+	docker exec rabbitmq sh -c "rabbitmqadmin declare binding --vhost=/ source='cdc.users' destination_type='queue' destination='cdc.users' routing_key='users'"
 
 stop-rabbitmq:
 	docker stop rabbitmq
 
 start-debezium-server:
-	@echo -n "Já criou a exchange? [y/N] " && read ans && [ $${ans:-N} = y ]
 	docker rm -f debezium
 	docker run -ti --name debezium \
 		-p 8080:8080 \
@@ -50,6 +54,9 @@ stop-debezium-server:
 
 open-postgres:
 	docker exec -ti postgres sh -c 'psql -U postgres'
+
+read-queue:
+	docker exec -ti rabbitmq sh -c "rabbitmqadmin get queue=cdc.users ackmode=ack_requeue_false"
 
 start: start-postgres start-rabbitmq start-debezium-server
 

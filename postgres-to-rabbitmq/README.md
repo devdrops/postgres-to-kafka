@@ -10,7 +10,7 @@ Siga os passos na ordem abaixo.
 make start-postgres
 ```
 
-2. Iniciar o RabbitMQ, habilitando os plugins de Stream:
+2. Iniciar o RabbitMQ, habilitando os plugins de Stream e Admin e criando exchange, queue e binding:
 
 ```sh
 make start-rabbitmq
@@ -35,3 +35,25 @@ CREATE TABLE users(id SERIAL PRIMARY KEY, name VARCHAR);
 make start-debezium-server
 ```
 
+5. Insira algumas linhas no banco de dados usando a conexão aberta no passo 3:
+
+```sql
+INSERT INTO users (name) VALUES ('Fulano da Silva'), ('Beltrano da Silva'), ('Cicrana da Silva');
+```
+
+6. Acompanhe na [dashboard do RabbitMQ](http://0.0.0.0:15672/#/queues/%2F/cdc.users) a entrada de mensagens na fila
+   `cdc.users`.
+
+7. Leia mensagens individualmente:
+
+```sh
+make read-queue
+```
+
+---
+
+Para encerrar:
+
+```sh
+make stop
+```
