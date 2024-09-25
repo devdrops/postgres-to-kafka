@@ -3,7 +3,8 @@ start-postgres:
 	docker run -d --name postgres \
 		-p 5432:5432 \
 		-v $(CURDIR)/postgres_conf/postgresql.conf:/etc/postgresql.conf \
-		-v $(CURDIR)/pgdata:/var/lib/postgresql/data/pgdata \
+		-v $(CURDIR)/postgres_conf/pgdata:/var/lib/postgresql/data/pgdata \
+		-v $(CURDIR)/postgres_conf/database.sql:/docker-entrypoint-initdb.d/database.sql \
 		-e PGDATA=/var/lib/postgresql/data/pgdata \
 		-e POSTGRES_HOST_AUTH_METHOD=trust \
 		-e POSTGRES_USER=postgres \
@@ -41,7 +42,7 @@ stop-rabbitmq:
 	docker stop rabbitmq
 
 start-debezium-server:
-	@echo -n "\033[0;31mAtenção: já criou o banco de dados do passo 3? [y/N] \033[0m" && read ans && [ $${ans:-N} = y ]
+	#@echo -n "\033[0;31mAtenção: já criou o banco de dados do passo 3? [y/N] \033[0m" && read ans && [ $${ans:-N} = y ]
 	docker rm -f debezium
 	docker run -ti --name debezium \
 		-p 8080:8080 \
