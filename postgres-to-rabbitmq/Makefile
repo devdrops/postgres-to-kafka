@@ -54,7 +54,7 @@ stop-debezium-server:
 	docker stop debezium
 
 open-postgres:
-	docker exec -ti postgres sh -c 'psql -U postgres'
+	docker exec -ti postgres sh -c 'psql -U postgres -d sample_database'
 
 read-queue:
 	docker exec -ti rabbitmq sh -c "rabbitmqadmin get queue=cdc.users ackmode=ack_requeue_false"
