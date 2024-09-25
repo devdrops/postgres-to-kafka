@@ -16,7 +16,7 @@ BEGIN;
     CREATE TABLE IF NOT EXISTS debezium_server_heartbeat (
         id         SERIAL      PRIMARY KEY,
         text       VARCHAR(20) NOT NULL,
-        created_at TIMESTAMP   NOT NULL DEFAULT NOW()
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
     COMMENT ON COLUMN debezium_server_heartbeat.id IS 'ID para demonstrar sequência de execução.';
     COMMENT ON COLUMN debezium_server_heartbeat.text IS 'Mensagem escrita pelo Debezium Server.';
