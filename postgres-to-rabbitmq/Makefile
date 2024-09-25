@@ -41,6 +41,7 @@ stop-rabbitmq:
 	docker stop rabbitmq
 
 start-debezium-server:
+	@echo -n "\033[0;31mAtenção: já criou o banco de dados do passo 3? [y/N] \033[0m" && read ans && [ $${ans:-N} = y ]
 	docker rm -f debezium
 	docker run -ti --name debezium \
 		-p 8080:8080 \
