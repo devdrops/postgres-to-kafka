@@ -16,29 +16,22 @@ make start-postgres
 make start-rabbitmq
 ```
 
-3. Criando uma estrutura padrão no banco de dados, que será observada:
-
-```sh
-make open-postgres
-
-# Uma vez feita a conexão, executar na ordem abaixo:
-CREATE DATABASE sample_database;
-\c sample_database;
-CREATE TABLE users(id SERIAL PRIMARY KEY, name VARCHAR);
-
-# Mantenha a conexão aberta ;)
-```
-
-4. Inicia o conector do Debezium Server:
+3. Inicia o conector do Debezium Server:
 
 ```sh
 make start-debezium-server
 ```
 
-5. Insira algumas linhas no banco de dados usando a conexão aberta no passo 3:
+4. Abrir uma conexão com o banco de dados:
+
+```sh
+make open-postgres
+```
+
+5. Execute o SQL abaixo:
 
 ```sql
-INSERT INTO users (name) VALUES ('Fulano da Silva'), ('Beltrano da Silva'), ('Cicrana da Silva');
+INSERT INTO users (name) VALUES ('Mais Um Silva');
 ```
 
 6. Acompanhe na [dashboard do RabbitMQ](http://0.0.0.0:15672/#/queues/%2F/cdc.users) a entrada de mensagens na fila
@@ -50,10 +43,58 @@ INSERT INTO users (name) VALUES ('Fulano da Silva'), ('Beltrano da Silva'), ('Ci
 make read-queue
 ```
 
----
-
-Para encerrar:
+8. Para encerrar:
 
 ```sh
 make stop
 ```
+
+---
+
+## Exemplos
+
+## INSERT
+
+```json
+{
+    "id": 1,
+    "name": "Mais Um Silva",
+    "__deleted": "false",
+    "operation": "c",
+    "table": "users",
+    "database": "sample_database",
+    "lsn": 26708824,
+    "source_ts_ms": 1727291746372
+}
+```
+
+## UPDATE
+
+```json
+{
+    "id": 1,
+    "name": "Outro Silva",
+    "__deleted": "false",
+    "operation": "u",
+    "table": "users",
+    "database": "sample_database",
+    "lsn": 26710104,
+    "source_ts_ms": 1727291797975
+}
+```
+
+## DELETE
+
+```json
+{
+    "id": 1,
+    "name": "",
+    "__deleted": "true",
+    "operation": "d",
+    "table": "users",
+    "database": "sample_database",
+    "lsn": 26710296,
+    "source_ts_ms": 1727291845804
+}
+```
+
