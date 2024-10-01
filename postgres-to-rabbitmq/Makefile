@@ -35,7 +35,7 @@ start-rabbitmq:
 	docker cp $(CURDIR)/rabbitmq_conf/definitions.json rabbitmq:/etc/rabbitmq
 	sleep 2 # Esperar 2 segundos para declarar a exchange
 	docker exec rabbitmq sh -c "rabbitmqadmin declare exchange name='cdc.users' type='direct'"
-	docker exec rabbitmq sh -c "rabbitmqadmin declare queue --vhost=/ name='cdc.users' durable='true'"
+	docker exec rabbitmq sh -c "rabbitmqadmin declare queue --vhost=/ name='cdc.users'"
 	docker exec rabbitmq sh -c "rabbitmqadmin declare binding --vhost=/ source='cdc.users' destination_type='queue' destination='cdc.users' routing_key='users'"
 
 stop-rabbitmq:
@@ -46,9 +46,11 @@ start-debezium-server:
 	docker run -ti --name debezium \
 		-p 8080:8080 \
 		-v $(CURDIR)/debezium_conf/application.properties:/debezium/conf/application.properties \
+		-e LOG_LEVEL=TRACE \
+		-e CONNECT_LOG4J_LOGGERS="TRACE, stdout" \
 		--link postgres:postgres \
 		--link rabbitmq:rabbitmq \
-		debezium/server
+		debezium/server:2.7
 
 stop-debezium-server:
 	docker stop debezium

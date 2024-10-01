@@ -9,8 +9,12 @@ SET timezone = 'America/Sao_Paulo';
 BEGIN;
     -- Create users table
     CREATE TABLE IF NOT EXISTS users (
-        id   SERIAL      PRIMARY KEY,
-        name VARCHAR(50) NOT NULL
+        id         SERIAL      PRIMARY KEY,
+        name       VARCHAR(50) NOT NULL,
+        document   VARCHAR(20) NOT NULL,
+        age        SMALLINT    NOT NULL,
+        active     BOOLEAN     NOT NULL,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
     -- Create debezium_server_heartbeat table
     CREATE TABLE IF NOT EXISTS debezium_server_heartbeat (
