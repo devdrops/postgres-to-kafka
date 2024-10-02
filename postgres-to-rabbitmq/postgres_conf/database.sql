@@ -1,9 +1,11 @@
+-- Create database
 SELECT 'CREATE DATABASE sample_database'
     WHERE NOT EXISTS
         (SELECT FROM pg_database WHERE datname = 'sample_database')\gexec
 
 \c sample_database
 
+-- Set timezone
 SET timezone = 'America/Sao_Paulo';
 
 BEGIN;
@@ -15,6 +17,13 @@ BEGIN;
         age        SMALLINT    NOT NULL,
         active     BOOLEAN     NOT NULL,
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+    -- Create products table
+    CREATE TABLE IF NOT EXISTS products (
+        id         SERIAL         PRIMARY KEY,
+        name       VARCHAR(50)    NOT NULL,
+        price      DECIMAL(10, 4) NOT NULL,
+        created_at TIMESTAMPTZ    NOT NULL DEFAULT NOW()
     );
     -- Create debezium_server_heartbeat table
     CREATE TABLE IF NOT EXISTS debezium_server_heartbeat (
