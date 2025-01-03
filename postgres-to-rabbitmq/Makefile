@@ -21,6 +21,8 @@ start-rabbitmq:
 		-p 15672:15672 \
 		-p 25672:25672 \
 		-p 5552:5552 \
+		-v $(CURDIR)/rabbitmq_conf/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf \
+		-v $(CURDIR)/rabbitmq_conf/definitions.json:/etc/rabbitmq/definitions.json \
 		-e RABBITMQ_ERLANG_COOKIE="a-secret-hash" \
 		-e RABBITMQ_DEFAULT_VHOST="/" \
 		-e RABBITMQ_DEFAULT_USER="guest" \
@@ -31,12 +33,6 @@ start-rabbitmq:
 	docker exec rabbitmq rabbitmq-plugins enable rabbitmq_stream
 	docker exec rabbitmq rabbitmq-plugins enable rabbitmq_stream_management
 	docker exec rabbitmq rabbitmq-plugins enable rabbitmq_management
-	docker cp $(CURDIR)/rabbitmq_conf/rabbitmq.conf rabbitmq:/etc/rabbitmq
-	docker cp $(CURDIR)/rabbitmq_conf/definitions.json rabbitmq:/etc/rabbitmq
-	sleep 2 # Esperar 2 segundos para declarar a exchange
-	docker exec rabbitmq sh -c "rabbitmqadmin declare exchange name='cdc.users' type='direct'"
-	docker exec rabbitmq sh -c "rabbitmqadmin declare queue --vhost=/ name='cdc.users'"
-	docker exec rabbitmq sh -c "rabbitmqadmin declare binding --vhost=/ source='cdc.users' destination_type='queue' destination='cdc.users' routing_key='users'"
 
 stop-rabbitmq:
 	docker stop rabbitmq

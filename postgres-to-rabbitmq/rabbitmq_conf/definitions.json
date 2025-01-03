@@ -24,14 +24,33 @@
       "write": ".*"
     }
   ],
+  "queues":[
+    {
+      "name": "users.queue",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": true,
+      "arguments": {}
+    }
+  ],
   "exchanges": [
     {
-      "name": "users_changes",
+      "name": "users.exchange",
       "vhost": "/",
-      "type": "fanout",
+      "type": "direct",
       "durable": true,
       "auto_delete": false,
       "internal": false,
+      "arguments": {}
+    }
+  ],
+  "bindings":[
+    {
+      "source": "users.exchange",
+      "vhost": "/",
+      "destination": "users.queue",
+      "destination_type": "queue",
+      "routing_key": "users.routingkey",
       "arguments": {}
     }
   ]
