@@ -2,24 +2,40 @@ up:
 	make postgres-up
 	make zookeeper-up
 	make kafka-up
-	make connect-up
+	make kafka-ui-up
+	make debezium-up
 
 clear:
-	docker remove postgres zookeeper kafka connect
+	docker remove \
+		postgres \
+		zookeeper \
+		kafka \
+		kafka-ui \
+		debezium
 
 down:
-	docker stop postgres
-	docker stop zookeeper
-	docker stop kafka
-	docker stop connect
+	docker stop \
+		postgres \
+		zookeeper \
+		kafka \
+		debezium \
+		kafka-ui
 	make clear
 
 postgres-up:
-	docker run -d \
-		--name postgres \
+	docker run -d --name postgres \
 		-p 5000:5432 \
+		-v $(PWD)/postgres_conf/postgresql.conf:/etc/postgresql.conf \
+		-v $(PWD)/postgres_conf/pgdata:/var/lib/postgresql/data \
+		-v $(PWD)/postgres_conf/database.sql:/docker-entrypoint-initdb.d/database.sql \
+		-e PGDATA=/var/lib/postgresql/data/pgdata \
 		-e POSTGRES_HOST_AUTH_METHOD=trust \
-		debezium/postgres
+		-e POSTGRES_USER=postgres \
+		-e POSTGRES_PASSWORD=postgres \
+		postgres:15-alpine sh -c "docker-entrypoint.sh -c 'config_file=/etc/postgresql.conf'"
+
+postgres-clear:
+	sudo rm -rf $(PWD)/postgres_conf/pgdata
 
 zookeeper-up:
 	docker run -it -d \
@@ -34,10 +50,23 @@ kafka-up:
 		--link zookeeper:zookeeper \
 		debezium/kafka:2.6
 
-connect-up:
-	docker run -it -d \
-		--name connect \
+kafka-ui-up:
+	docker run -d \
+		--name kafka-ui \
+		-p 8080:8080 \
+		-e DYNAMIC_CONFIG_ENABLED=true \
+		--link=kafka:kafka \
+		provectuslabs/kafka-ui
+
+debezium-up:
+	docker run -it -ti \
+		--name debezium \
 		-p 8083:8083 \
-		-e GROUP_ID=1 -e CONFIG_STORAGE_TOPIC=my-connect-configs -e OFFSET_STORAGE_TOPIC=my-connect-offsets -e ADVERTISED_HOST_NAME=$(shell echo $DOCKER_HOST | cut -f3 -d'/' | cut -f1 -d':') \
-		--link zookeeper:zookeeper --link postgres:postgres --link kafka:kafka \
-		debezium/connect:2.6
+		-e GROUP_ID=1 \
+		-e CONNECT_LOG4J_LOGGERS="TRACE, stdout" \
+		-v $(CURDIR)/debezium_conf/application.properties:/debezium/conf/application.properties \
+		--link zookeeper:zookeeper \
+		--link postgres:postgres \
+		--link kafka:kafka \
+		debezium/server:2.7.3.Final
+
