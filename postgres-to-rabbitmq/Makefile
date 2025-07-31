@@ -46,7 +46,7 @@ start-debezium-server:
 		-e CONNECT_LOG4J_LOGGERS="TRACE, stdout" \
 		--link postgres:postgres \
 		--link rabbitmq:rabbitmq \
-		debezium/server:2.7
+		debezium/server:2.7.3.Final
 
 stop-debezium-server:
 	docker stop debezium
